@@ -11,7 +11,7 @@ const directions = data
   .map(line => line.split(' '))
   .map(([direction, change]) => [direction, Number(change)])
 
-function calculateEndpoint(directions) {
+function calculateEndpointSimple(directions) {
   let x = 0
   let y = 0
 
@@ -24,10 +24,27 @@ function calculateEndpoint(directions) {
   return { x, y }
 }
 
-const { x, y } = calculateEndpoint(directions)
+function calculateEndpointComplex(directions) {
+  let aim = 0
+  let x = 0
+  let y = 0
 
-const firstAnswer = x * y
+  for (const [direction, change] of directions) {
+    if (direction === 'forward') {
+      x += change
+      y += aim * change
+    }
+    if (direction === 'down') aim += change
+    if (direction === 'up') aim -= change
+  }
 
-console.log(firstAnswer)
+  return { x, y }
+}
 
-module.exports = { calculateEndpoint }
+const { x, y } = calculateEndpointSimple(directions)
+const { x: x2, y: y2 } = calculateEndpointComplex(directions)
+
+const firstAnswer = x * y // 1507611
+const secondAnswer = x2 * y2 // 1880593125
+
+module.exports = { calculateEndpointComplex, calculateEndpointSimple }
