@@ -51,8 +51,8 @@ function checkForWin(board) {
   return false
 }
 
-function runGame(nums, brds) {
-  const parsedBoards = brds.map(parseBoard)
+function runGame(nums, boards) {
+  const parsedBoards = boards.map(parseBoard)
 
   for (const num of nums) {
     for (const board of parsedBoards) {
@@ -65,8 +65,6 @@ function runGame(nums, brds) {
   }
 }
 
-const bingo = runGame(numbers, boards)
-
 function sumUnmarkedNumbers(board) {
   return board
     .flat()
@@ -74,10 +72,40 @@ function sumUnmarkedNumbers(board) {
     .reduce((acc, item) => acc + item.value, 0)
 }
 
-const unmarkedSum = sumUnmarkedNumbers(bingo.board.board)
+/**
+ * Run the entire game, and save every time we have a winning
+ * board. Filter out winning boards before calling the next number,
+ * This should result in the last winning board being the final result
+ */
+function runSecondGame(nums, boards) {
+  let result
+  let parsedBoards = boards.map(parseBoard)
 
-const firstAnswer = bingo.num * unmarkedSum // 25410
+  for (const num of nums) {
+    for (const board of parsedBoards) {
+      updateBoard(board, num)
 
-console.log(firstAnswer)
+      const hasWon = checkForWin(board.board)
 
-module.exports = { runGame }
+      if (hasWon) {
+        result = { num, board }
+      }
+    }
+
+    parsedBoards = parsedBoards.filter(board => !checkForWin(board.board))
+  }
+
+  return result
+}
+
+const firstBingo = runGame(numbers, boards)
+const firstBingoUnmarkedSum = sumUnmarkedNumbers(firstBingo.board.board)
+
+const firstAnswer = firstBingo.num * firstBingoUnmarkedSum // 25410
+
+const lastBingo = runSecondGame(numbers, boards)
+const lastBingoUnmarkedSum = sumUnmarkedNumbers(lastBingo.board.board)
+
+const secondAnswer = lastBingo.num * lastBingoUnmarkedSum // 2730
+
+module.exports = { runGame, runSecondGame }
