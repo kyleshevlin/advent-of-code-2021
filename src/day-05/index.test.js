@@ -41,13 +41,18 @@ test('generatePointsForLine', () => {
 const makeLine = (x1, y1, x2, y2) => ({ x1, y1, x2, y2 })
 
 test('layoutLines', () => {
-  const lines = [makeLine(2, 0, 2, 4), makeLine(0, 2, 4, 2)]
+  const lines = [
+    makeLine(2, 0, 2, 4),
+    makeLine(0, 2, 4, 2),
+    makeLine(0, 0, 4, 4),
+    makeLine(4, 0, 0, 4),
+  ]
 
   expect(layoutLines(lines)).toEqual([
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
-    [1, 1, 2, 1, 1],
-    [0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0],
+    [1, 0, 1, 0, 1],
+    [0, 1, 1, 1, 0],
+    [1, 1, 4, 1, 1],
+    [0, 1, 1, 1, 0],
+    [1, 0, 1, 0, 1],
   ])
 })

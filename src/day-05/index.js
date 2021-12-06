@@ -19,6 +19,7 @@ const lines = data
 
 const horizontalLines = lines.filter(({ x1, x2 }) => x1 === x2)
 const verticalLines = lines.filter(({ y1, y2 }) => y1 === y2)
+
 const nonDiagonalLines = [...horizontalLines, ...verticalLines]
 
 function layoutLines(lines) {
@@ -40,10 +41,13 @@ function layoutLines(lines) {
   return grid
 }
 
+// TODO: This could use a refactor
 function generatePointsForLine({ x1, y1, x2, y2 }) {
+  const xDiff = x1 - x2
+  const yDiff = y1 - y2
+
   if (x1 === x2) {
     const result = []
-    const yDiff = y1 - y2
 
     for (let i = 0; i <= Math.abs(yDiff); i++) {
       const nextY = yDiff < 0 ? y1 + i : y1 - i
@@ -55,11 +59,24 @@ function generatePointsForLine({ x1, y1, x2, y2 }) {
 
   if (y1 === y2) {
     const result = []
-    const xDiff = x1 - x2
 
     for (let i = 0; i <= Math.abs(xDiff); i++) {
       const nextX = xDiff < 0 ? x1 + i : x1 - i
       result.push([nextX, y1])
+    }
+
+    return result
+  }
+
+  const ratio = xDiff / yDiff
+
+  if (Math.abs(ratio)) {
+    const result = []
+
+    for (let i = 0; i <= Math.abs(xDiff); i++) {
+      const nextX = xDiff < 0 ? x1 + i : x1 - i
+      const nextY = yDiff < 0 ? y1 + i : y1 - i
+      result.push([nextX, nextY])
     }
 
     return result
@@ -74,9 +91,27 @@ function generateEmptyGrid(cols, rows) {
   return grid
 }
 
+function getIntersections(grid) {
+  return grid.flat().filter(item => item > 1)
+}
+
 const linedGrid = layoutLines(nonDiagonalLines)
 
-const intersections = linedGrid.flat().filter(item => item > 1)
+const intersections = getIntersections(linedGrid)
 const firstAnswer = intersections.length // 5373
+
+const diagonalLines = lines.filter(({ x1, y1, x2, y2 }) => {
+  if (x1 === x2 || y1 === y2) return false
+
+  // Equal diffs mean that the rise and run are the same, which is 45deg in
+  // some direction
+  const xDiff = x1 - x2
+  const yDiff = y1 - y2
+  return Math.abs(xDiff) === Math.abs(yDiff)
+})
+
+const secondLinedGrid = layoutLines([...nonDiagonalLines, ...diagonalLines])
+const secondIntersections = getIntersections(secondLinedGrid)
+const secondAnswer = secondIntersections.length // 21514
 
 module.exports = { generatePointsForLine, layoutLines }
