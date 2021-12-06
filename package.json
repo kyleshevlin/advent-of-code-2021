@@ -1,7 +1,8 @@
 {
   "name": "advent-of-code-2021",
   "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "My solutions for Advent of Code 2021",
   "main": "index.js",
   "scripts": {
     "test": "jest",
