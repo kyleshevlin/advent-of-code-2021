@@ -5,6 +5,8 @@ const data = fs.readFileSync(path.resolve(__dirname, './input.txt'), {
   encoding: 'utf-8',
 })
 
+const makeLine = (x1, y1, x2, y2) => ({ x1, y1, x2, y2 })
+
 const lines = data
   .trim()
   .split('\n')
@@ -15,25 +17,19 @@ const lines = data
       .map(str => str.trim())
       .map(Number)
   )
-  .map(([x1, y1, x2, y2]) => ({ x1, y1, x2, y2 }))
+  .map(coords => makeLine(...coords))
 
-const horizontalLines = lines.filter(({ x1, x2 }) => x1 === x2)
-const verticalLines = lines.filter(({ y1, y2 }) => y1 === y2)
-
-const nonDiagonalLines = [...horizontalLines, ...verticalLines]
-
-function layoutLines(lines) {
+function applyLinesToGrid(lines) {
   const maxX = Math.max(...lines.flatMap(({ x1, x2 }) => [x1, x2]))
   const maxY = Math.max(...lines.flatMap(({ y1, y2 }) => [y1, y2]))
 
-  // Grid should include max
+  // Grid should include maxes
   const grid = generateEmptyGrid(maxX + 1, maxY + 1)
 
   for (const line of lines) {
     const points = generatePointsForLine(line)
 
-    for (const point of points) {
-      const [col, row] = point
+    for (const [col, row] of points) {
       grid[row][col]++
     }
   }
@@ -43,12 +39,11 @@ function layoutLines(lines) {
 
 // TODO: This could use a refactor
 function generatePointsForLine({ x1, y1, x2, y2 }) {
+  const result = []
   const xDiff = x1 - x2
   const yDiff = y1 - y2
 
-  if (x1 === x2) {
-    const result = []
-
+  if (!xDiff) {
     for (let i = 0; i <= Math.abs(yDiff); i++) {
       const nextY = yDiff < 0 ? y1 + i : y1 - i
       result.push([x1, nextY])
@@ -57,9 +52,7 @@ function generatePointsForLine({ x1, y1, x2, y2 }) {
     return result
   }
 
-  if (y1 === y2) {
-    const result = []
-
+  if (!yDiff) {
     for (let i = 0; i <= Math.abs(xDiff); i++) {
       const nextX = xDiff < 0 ? x1 + i : x1 - i
       result.push([nextX, y1])
@@ -68,11 +61,7 @@ function generatePointsForLine({ x1, y1, x2, y2 }) {
     return result
   }
 
-  const ratio = xDiff / yDiff
-
-  if (Math.abs(ratio)) {
-    const result = []
-
+  if (Math.abs(xDiff / yDiff)) {
     for (let i = 0; i <= Math.abs(xDiff); i++) {
       const nextX = xDiff < 0 ? x1 + i : x1 - i
       const nextY = yDiff < 0 ? y1 + i : y1 - i
@@ -84,20 +73,20 @@ function generatePointsForLine({ x1, y1, x2, y2 }) {
 }
 
 function generateEmptyGrid(cols, rows) {
-  const grid = Array(rows)
+  return Array(rows)
     .fill()
     .map(() => Array(cols).fill(0))
-
-  return grid
 }
 
-function getIntersections(grid) {
+function getLineIntersections(grid) {
   return grid.flat().filter(item => item > 1)
 }
 
-const linedGrid = layoutLines(nonDiagonalLines)
-
-const intersections = getIntersections(linedGrid)
+const horizontalLines = lines.filter(({ x1, x2 }) => x1 === x2)
+const verticalLines = lines.filter(({ y1, y2 }) => y1 === y2)
+const nonDiagonalLines = [...horizontalLines, ...verticalLines]
+const linedGrid = applyLinesToGrid(nonDiagonalLines)
+const intersections = getLineIntersections(linedGrid)
 const firstAnswer = intersections.length // 5373
 
 const diagonalLines = lines.filter(({ x1, y1, x2, y2 }) => {
@@ -110,8 +99,15 @@ const diagonalLines = lines.filter(({ x1, y1, x2, y2 }) => {
   return Math.abs(xDiff) === Math.abs(yDiff)
 })
 
-const secondLinedGrid = layoutLines([...nonDiagonalLines, ...diagonalLines])
-const secondIntersections = getIntersections(secondLinedGrid)
+const secondLinedGrid = applyLinesToGrid([
+  ...nonDiagonalLines,
+  ...diagonalLines,
+])
+const secondIntersections = getLineIntersections(secondLinedGrid)
 const secondAnswer = secondIntersections.length // 21514
 
-module.exports = { generatePointsForLine, layoutLines }
+module.exports = {
+  applyLinesToGrid,
+  generatePointsForLine,
+  makeLine,
+}

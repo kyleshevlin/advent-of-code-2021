@@ -1,4 +1,4 @@
-const { generatePointsForLine, layoutLines } = require('./')
+const { generatePointsForLine, applyLinesToGrid, makeLine } = require('./')
 
 test('generatePointsForLine', () => {
   expect(generatePointsForLine({ x1: 0, y1: 0, x2: 0, y2: 5 })).toEqual([
@@ -38,9 +38,7 @@ test('generatePointsForLine', () => {
   ])
 })
 
-const makeLine = (x1, y1, x2, y2) => ({ x1, y1, x2, y2 })
-
-test('layoutLines', () => {
+test('applyLinesToGrid', () => {
   const lines = [
     makeLine(2, 0, 2, 4),
     makeLine(0, 2, 4, 2),
@@ -48,7 +46,7 @@ test('layoutLines', () => {
     makeLine(4, 0, 0, 4),
   ]
 
-  expect(layoutLines(lines)).toEqual([
+  expect(applyLinesToGrid(lines)).toEqual([
     [1, 0, 1, 0, 1],
     [0, 1, 1, 1, 0],
     [1, 1, 4, 1, 1],
