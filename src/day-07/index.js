@@ -7,10 +7,10 @@ const data = fs.readFileSync(path.resolve(__dirname, './input.txt'), {
 
 const crabPositions = data.trim().split(',').map(Number)
 
-const simpleFuelUsage = (num, position) => Math.abs(num - position)
+const simpleFuelUsage = (pos1, pos2) => Math.abs(pos1 - pos2)
 
-const complexFuelUsage = (num, position) => {
-  let diff = Math.abs(num - position)
+const complexFuelUsage = (pos1, pos2) => {
+  let diff = Math.abs(pos1 - pos2)
   let result = 0
 
   while (diff) {
@@ -27,19 +27,15 @@ function main(positions, fuelCalculation = simpleFuelUsage) {
   const simulations = []
 
   for (let i = min; i <= max; i++) {
-    const fuels = positions.map(num => fuelCalculation(num, i))
-    const fuel = fuels.reduce((acc, cur) => acc + cur, 0)
-    simulations.push({ fuel, position: i })
+    const fuels = positions.map(pos => fuelCalculation(pos, i))
+    const totalFuel = fuels.reduce((acc, cur) => acc + cur, 0)
+
+    simulations.push({ fuel: totalFuel, position: i })
   }
 
   const result = simulations.reduce(
-    (acc, cur) => {
-      if (cur.fuel < acc.fuel) return cur
-      return acc
-    },
-    {
-      fuel: Infinity,
-    }
+    (acc, cur) => (cur.fuel < acc.fuel ? cur : acc),
+    { fuel: Infinity }
   )
 
   return result
