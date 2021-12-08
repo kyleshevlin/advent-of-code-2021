@@ -71,14 +71,37 @@ function partTwo(signals) {
   return result
 }
 
+// Sets can be used to determine some of the numbers
+function union(setA, setB) {
+  const result = new Set(setA)
+
+  for (let element of setB) {
+    result.add(element)
+  }
+
+  return result
+}
+
+function difference(setA, setB) {
+  const result = new Set()
+
+  for (let element of setA) {
+    if (!setB.has(element)) {
+      result.add(element)
+    }
+  }
+
+  return result
+}
+
 /**
  * Well, it works 😅
  */
 function decipherOutput(signal) {
   const [patterns, output] = signal
   const one = getOne(patterns)
-  const seven = getSeven(patterns)
   const four = getFour(patterns)
+  const seven = getSeven(patterns)
   const eight = getEight(patterns)
 
   // There are three segments we can know for certain. Probably could do them all
@@ -91,7 +114,7 @@ function decipherOutput(signal) {
 
   // We can know the top segment for certain because we can remove the
   // segments of one from the segments of seven
-  knownSegments.top = [...seven].filter(l => !one.includes(l))[0]
+  knownSegments.top = [...difference(new Set(seven), new Set(one))][0]
 
   // Six is the only number with 6 segments and only one (not both) of
   // the segments of one
@@ -103,10 +126,10 @@ function decipherOutput(signal) {
 
   // Now that we know we have six, we can deduce upperRight (missing from six)
   // and then the lower right segment
-  knownSegments.upperRight = [...one].filter(l => !six.includes(l))[0]
-  knownSegments.lowerRight = [...one].filter(
-    l => l !== knownSegments.upperRight
-  )[0]
+  knownSegments.upperRight = [...difference(new Set(one), new Set(six))][0]
+  knownSegments.lowerRight = [
+    ...difference(new Set(one), new Set(knownSegments.upperRight)),
+  ][0]
 
   // Three is the only one with 5 segments and both segments of one
   const [three] = patterns.filter(
@@ -115,6 +138,9 @@ function decipherOutput(signal) {
       pattern.includes(knownSegments.upperRight) &&
       pattern.includes(knownSegments.lowerRight)
   )
+
+  // Nine is the union of three and four
+  const nine = [...union(new Set(three), new Set(four))].sort().join('')
 
   // Two has 5 segments, isn't three (obvs), and has the upper right segment (where
   // five has the lower right segment)
@@ -128,12 +154,6 @@ function decipherOutput(signal) {
   // Five has 5 segments and isn't two and three :)
   const [five] = patterns.filter(
     pattern => pattern.length === 5 && pattern !== two && pattern !== three
-  )
-
-  // Nine and zero both contain 6 segments, but Nine has the middle segment.
-  // This means that nine contains all the segments of four, but zero does not.
-  const [nine] = patterns.filter(
-    pattern => pattern.length === 6 && [...four].every(l => pattern.includes(l))
   )
 
   const decipheredOutputs = output.map(val => {
