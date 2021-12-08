@@ -58,8 +58,6 @@ function partTwo(signals) {
     decipherOutput(signal)
   )
 
-  // console.log(decodedOutputValues)
-
   const result = decodedOutputValues.reduce((acc, cur) => acc + cur, 0)
 
   return result
