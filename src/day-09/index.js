@@ -15,15 +15,17 @@ function createMatrix(map) {
 function partOne(map) {
   const matrix = createMatrix(map)
 
+  function getCell(rowIdx, colIdx, guard) {
+    return guard ? matrix[rowIdx][colIdx] : Infinity
+  }
+
   const lowPoints = []
   for (const [rowIdx, row] of matrix.entries()) {
     for (const [colIdx, col] of row.entries()) {
-      const above = rowIdx > 0 ? matrix[rowIdx - 1][colIdx] : Infinity
-      const right =
-        colIdx < row.length - 1 ? matrix[rowIdx][colIdx + 1] : Infinity
-      const below =
-        rowIdx < matrix.length - 1 ? matrix[rowIdx + 1][colIdx] : Infinity
-      const left = colIdx > 0 ? matrix[rowIdx][colIdx - 1] : Infinity
+      const above = getCell(rowIdx - 1, colIdx, rowIdx > 0)
+      const right = getCell(rowIdx, colIdx + 1, colIdx < row.length - 1)
+      const below = getCell(rowIdx + 1, colIdx, rowIdx < matrix.length - 1)
+      const left = getCell(rowIdx, colIdx - 1, colIdx > 0)
 
       if (col < above && col < right && col < below && col < left) {
         lowPoints.push(col)
@@ -45,16 +47,18 @@ const p = makePoint
 function partTwo(map) {
   const matrix = createMatrix(map)
 
+  function getCell(rowIdx, colIdx, guard) {
+    return guard ? matrix[rowIdx][colIdx] : Infinity
+  }
+
   // We're going to store the coordinates of low points this time
   const lowPoints = []
   for (const [rowIdx, row] of matrix.entries()) {
     for (const [colIdx, col] of row.entries()) {
-      const above = rowIdx > 0 ? matrix[rowIdx - 1][colIdx] : Infinity
-      const right =
-        colIdx < row.length - 1 ? matrix[rowIdx][colIdx + 1] : Infinity
-      const below =
-        rowIdx < matrix.length - 1 ? matrix[rowIdx + 1][colIdx] : Infinity
-      const left = colIdx > 0 ? matrix[rowIdx][colIdx - 1] : Infinity
+      const above = getCell(rowIdx - 1, colIdx, rowIdx > 0)
+      const right = getCell(rowIdx, colIdx + 1, colIdx < row.length - 1)
+      const below = getCell(rowIdx + 1, colIdx, rowIdx < matrix.length - 1)
+      const left = getCell(rowIdx, colIdx - 1, colIdx > 0)
 
       if (col < above && col < right && col < below && col < left) {
         lowPoints.push(p(rowIdx, colIdx))
