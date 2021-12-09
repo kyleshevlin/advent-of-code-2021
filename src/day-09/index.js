@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-const { decode } = require('punycode')
 
 const data = fs.readFileSync(path.resolve(__dirname, './input.txt'), {
   encoding: 'utf-8',
