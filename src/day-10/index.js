@@ -5,7 +5,7 @@ const data = fs.readFileSync(path.resolve(__dirname, './input.txt'), {
   encoding: 'utf-8',
 })
 
-const OPENS = ['(', '[', '{', '<']
+const OPENERS = ['(', '[', '{', '<']
 const CLOSERS = [')', ']', '}', '>']
 
 const CLOSE_OPEN_MAP = {
@@ -33,9 +33,6 @@ function createStack() {
   const stack = []
 
   return {
-    debug() {
-      console.log(stack)
-    },
     push(x) {
       stack.push(x)
     },
@@ -45,13 +42,6 @@ function createStack() {
       }
 
       return stack.pop()
-    },
-    peek() {
-      if (stack.length === 0) {
-        return undefined
-      }
-
-      return stack[stack.length - 1]
     },
     get length() {
       return stack.length
@@ -66,8 +56,9 @@ function testLine(line) {
   const stack = createStack()
 
   for (const char of line) {
-    if (OPENS.includes(char)) {
+    if (OPENERS.includes(char)) {
       stack.push(char)
+      continue
     }
 
     if (CLOSERS.includes(char)) {
