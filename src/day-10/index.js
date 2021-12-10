@@ -8,7 +8,7 @@ const data = fs.readFileSync(path.resolve(__dirname, './input.txt'), {
 const OPENERS = ['(', '[', '{', '<']
 const CLOSERS = [')', ']', '}', '>']
 
-const CLOSE_OPEN_MAP = {
+const CLOSE_TO_OPEN_MAP = {
   ')': '(',
   ']': '[',
   '}': '{',
@@ -63,7 +63,7 @@ function testLine(line) {
 
     if (CLOSERS.includes(char)) {
       const closer = char
-      const opener = CLOSE_OPEN_MAP[char]
+      const opener = CLOSE_TO_OPEN_MAP[char]
       const lastOpener = stack.pop()
 
       if (lastOpener !== opener) {
