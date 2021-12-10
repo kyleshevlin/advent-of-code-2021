@@ -1,4 +1,4 @@
-const { partOne, partTwo, testLine } = require('./')
+const { completeLine, partOne, partTwo, testLine } = require('./')
 
 test('testLine', () => {
   expect(testLine('()')).toEqual({ result: 'complete' })
@@ -9,10 +9,16 @@ test('testLine', () => {
   expect(testLine('<([{}])>')).toEqual({ result: 'complete' })
   expect(testLine('[<>({}){}[([])<>]]')).toEqual({ result: 'complete' })
   expect(testLine('(((((((((())))))))))')).toEqual({ result: 'complete' })
-  expect(testLine('{()()()')).toEqual({ result: 'incomplete' })
-  expect(testLine('<([{}])')).toEqual({ result: 'incomplete' })
-  expect(testLine('[<>({}){}[([])<>]')).toEqual({ result: 'incomplete' })
-  expect(testLine('(((((((((()))))))))')).toEqual({ result: 'incomplete' })
+  expect(testLine('{()()()')).toEqual({ result: 'incomplete', unclosed: ['{'] })
+  expect(testLine('<([{}])')).toEqual({ result: 'incomplete', unclosed: ['<'] })
+  expect(testLine('[<>({}){}[([])<>]')).toEqual({
+    result: 'incomplete',
+    unclosed: ['['],
+  })
+  expect(testLine('(((((((((()))))))))')).toEqual({
+    result: 'incomplete',
+    unclosed: ['('],
+  })
   expect(testLine('{([(<{}[<>[]}>{[]{[(<()>')).toEqual({
     result: 'corrupted',
     expected: ']',
@@ -52,8 +58,24 @@ test('partOne', () => {
   expect(partOne(data)).toEqual(26397)
 })
 
-xtest('partTwo', () => {
-  const data = ``
+test('completeLine', () => {
+  const result = testLine('[({(<(())[]>[[{[]{<()<>>')
+  expect(completeLine(result.unclosed)).toEqual('}}]])})]')
+})
 
-  expect(partTwo(data)).toEqual(1134)
+test('partTwo', () => {
+  const data = `
+[({(<(())[]>[[{[]{<()<>>
+[(()[<>])]({[<{<<[]>>(
+{([(<{}[<>[]}>{[]{[(<()>
+(((({<>}<{<{<>}{[]{[]{}
+[[<[([]))<([[{}[[()]]]
+[{[{({}]{}}([{[{{{}}([]
+{<[[]]>}<{[{[{[]{()[[[]
+[<(<(<(<{}))><([]([]()
+<{([([[(<>()){}]>(<<{{
+<{([{{}}[<[[[<>{}]]]>[]]
+`
+
+  expect(partTwo(data)).toEqual(288957)
 })
