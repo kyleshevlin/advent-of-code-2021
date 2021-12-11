@@ -91,9 +91,27 @@ function partOne(input, ticks = 1) {
 
 const firstAnswer = partOne(data, 100) // 1743
 
-function partTwo(input) {}
+function partTwo(input) {
+  const sim = createSim(input)
 
-const secondAnswer = partTwo(data) // 2182912364
+  function isSynced(matrix) {
+    return matrix.every(row => row.every(col => col === 0))
+  }
+
+  let synced = false
+  let steps = 0
+
+  while (!synced) {
+    steps++
+    sim.tick()
+    synced = isSynced(sim.matrix)
+  }
+
+  return steps
+}
+
+const secondAnswer = partTwo(data) // 364
+
 module.exports = {
   partOne,
   partTwo,
