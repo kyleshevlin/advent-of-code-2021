@@ -15,16 +15,14 @@ const numbers = data.trim().split('\n').map(Number)
  */
 function convertToSlidingWindows(numbers) {
   let [a, b, ...otherNumbers] = numbers
-  let c
   const sums = []
 
   for (const number of otherNumbers) {
-    c = number
-    const sum = a + b + c
+    const sum = a + b + number
     sums.push(sum)
 
     a = b
-    b = c
+    b = number
   }
 
   return sums
