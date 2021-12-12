@@ -1,7 +1,6 @@
 const { partOne, partTwo } = require('./')
 
-test('partOne', () => {
-  const data = `
+const data = `
 start-A
 start-b
 A-c
@@ -11,9 +10,10 @@ A-end
 b-end
 `
 
+test('partOne', () => {
   expect(partOne(data)).toEqual(10)
 })
 
-// test('partTwo', () => {
-//   expect(partTwo(data)).toEqual(195)
-// })
+test('partTwo', () => {
+  expect(partTwo(data)).toEqual(36)
+})
