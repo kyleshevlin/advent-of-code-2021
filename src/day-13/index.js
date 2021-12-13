@@ -47,9 +47,12 @@ function makeGridFromDots(dots) {
   return grid
 }
 
+function getPrintableGrid(grid) {
+  return grid.map(row => row.join('')).join('\n')
+}
+
 function printGrid(grid) {
-  const result = grid.map(row => row.join('')).join('\n')
-  console.log(result)
+  console.log(getPrintableGrid(grid))
 }
 
 function applyUpwardFold(grid, rowIdx) {
@@ -119,7 +122,35 @@ function partOne(input) {
 
 const firstAnswer = partOne(data) // 678
 
-function partTwo(input) {}
+function partTwo(input) {
+  const [dots, folds] = parseInput(input)
+  const grid = makeGridFromDots(dots)
+
+  let folded = grid
+  folds.forEach(([dir, val]) => {
+    if (dir === 'x') {
+      folded = applyLeftwardFold(folded, val)
+    }
+
+    if (dir === 'y') {
+      folded = applyUpwardFold(folded, val)
+    }
+  })
+
+  const result = getPrintableGrid(folded)
+
+  return result
+}
+
+const secondAnswer = partTwo(data)
+/**
+ * ####..##..####.#..#.#....#..#.####.####.
+ * #....#..#.#....#..#.#....#..#....#.#....
+ * ###..#....###..####.#....####...#..###..
+ * #....#....#....#..#.#....#..#..#...#....
+ * #....#..#.#....#..#.#....#..#.#....#....
+ * ####..##..#....#..#.####.#..#.####.#....
+ */
 
 module.exports = {
   partOne,

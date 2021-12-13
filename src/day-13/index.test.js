@@ -28,6 +28,16 @@ test('partOne', () => {
   expect(partOne(data)).toEqual(17)
 })
 
-xtest('partTwo', () => {
-  expect(partTwo(data)).toEqual(36)
+test('partTwo', () => {
+  expect(partTwo(data)).toEqual(
+    `
+#####
+#...#
+#...#
+#...#
+#####
+.....
+.....
+`.trim()
+  )
 })
