@@ -74,9 +74,111 @@ function partOne(input) {
 
 const firstAnswer = partOne(data) // 3230
 
-function partTwo(input) {}
+function makePairHash(str) {
+  const result = {}
+  for (let i = 0; i < str.length - 1; i++) {
+    const key = str[i] + str[i + 1]
+    if (!result[key]) result[key] = 0
+    result[key]++
+  }
+  return result
+}
+
+function makeCharCounts(str) {
+  const result = {}
+  str.split('').forEach(char => {
+    if (!result[char]) {
+      result[char] = 0
+    }
+
+    result[char]++
+  })
+
+  return result
+}
+
+function optimizedApplyInsertions(template, insertions, applications) {
+  const pairHash = makePairHash(template)
+  const charCounts = makeCharCounts(template)
+  const insertionEntries = Object.entries(insertions)
+
+  function applyInsertion() {
+    const changes = {}
+    const inserts = {}
+
+    for (const [pair, insert] of insertionEntries) {
+      if (!pairHash[pair]) continue
+
+      let count = pairHash[pair]
+      const [first, last] = pair
+      const leftKey = first + insert
+      const rightKey = insert + last
+
+      if (!changes[leftKey]) changes[leftKey] = 0
+      if (!changes[rightKey]) changes[rightKey] = 0
+      if (!changes[pair]) changes[pair] = 0
+      changes[leftKey] += count
+      changes[rightKey] += count
+      changes[pair] -= count
+
+      if (!inserts[insert]) inserts[insert] = 0
+      inserts[insert] += count
+    }
+
+    Object.entries(changes).forEach(([pair, change]) => {
+      if (!pairHash[pair]) {
+        pairHash[pair] = 0
+      }
+
+      pairHash[pair] += change
+    })
+
+    Object.entries(inserts).forEach(([key, value]) => {
+      if (!charCounts[key]) charCounts[key] = 0
+      charCounts[key] += value
+    })
+
+    Object.entries(pairHash).forEach(([key, value]) => {
+      if (!value) delete pairHash[key]
+    })
+  }
+
+  for (let i = 0; i < applications; i++) {
+    applyInsertion()
+  }
+
+  return charCounts
+}
+
+function partTwo(input, applications) {
+  const [polymerTemplate, pairInsertions] = parseInput(input)
+  const counts = optimizedApplyInsertions(
+    polymerTemplate,
+    pairInsertions,
+    applications
+  )
+
+  const [, max] = Object.entries(counts).reduce(
+    (acc, cur) => {
+      return cur[1] > acc[1] ? cur : acc
+    },
+    [, -Infinity]
+  )
+  const [, min] = Object.entries(counts).reduce(
+    (acc, cur) => {
+      return cur[1] < acc[1] ? cur : acc
+    },
+    [, Infinity]
+  )
+
+  return max - min
+}
+
+const secondAnswer = partTwo(data, 40) // 3542388214529
 
 module.exports = {
   partOne,
   partTwo,
+  optimizedApplyInsertions,
+  parseInput,
 }
