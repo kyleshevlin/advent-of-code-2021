@@ -7,11 +7,13 @@ const data = fs.readFileSync(path.resolve(__dirname, './input.txt'), {
 
 function parseInput(input) {
   let [polymerTemplate, pairInsertions] = input.trim().split('\n\n')
-  pairInsertions = pairInsertions.split('\n').map(item => item.split(' -> '))
-  pairInsertions = pairInsertions.reduce((acc, [pair, insertion]) => {
-    acc[pair] = insertion
-    return acc
-  }, {})
+  pairInsertions = pairInsertions
+    .split('\n')
+    .map(item => item.split(' -> '))
+    .reduce((acc, [pair, insertion]) => {
+      acc[pair] = insertion
+      return acc
+    }, {})
 
   return [polymerTemplate, pairInsertions]
 }
@@ -28,6 +30,8 @@ function applyInsertions(string, insertions) {
     }
   })
 
+  // This always removes the first character of the next string
+  // resulting in the correctly stitched back together string
   const result = inserted.reduce((acc, cur) => {
     return acc + cur.slice(1)
   })
@@ -35,12 +39,13 @@ function applyInsertions(string, insertions) {
   return result
 }
 
+function initZero(obj, key) {
+  if (!obj[key]) obj[key] = 0
+}
+
 function countChars(string) {
   return [...string].reduce((acc, cur) => {
-    if (!acc[cur]) {
-      acc[cur] = 0
-    }
-
+    initZero(acc, cur)
     acc[cur]++
 
     return acc
@@ -56,18 +61,9 @@ function partOne(input) {
   }
 
   const counts = countChars(polymer)
-  const [, max] = Object.entries(counts).reduce(
-    (acc, cur) => {
-      return cur[1] > acc[1] ? cur : acc
-    },
-    [, -Infinity]
-  )
-  const [, min] = Object.entries(counts).reduce(
-    (acc, cur) => {
-      return cur[1] < acc[1] ? cur : acc
-    },
-    [, Infinity]
-  )
+  const values = Object.values(counts)
+  const min = Math.min(...values)
+  const max = Math.max(...values)
 
   return max - min
 }
@@ -76,28 +72,51 @@ const firstAnswer = partOne(data) // 3230
 
 function makePairHash(str) {
   const result = {}
+
   for (let i = 0; i < str.length - 1; i++) {
     const key = str[i] + str[i + 1]
-    if (!result[key]) result[key] = 0
+    initZero(result, key)
     result[key]++
   }
+
   return result
 }
 
 function makeCharCounts(str) {
   const result = {}
-  str.split('').forEach(char => {
-    if (!result[char]) {
-      result[char] = 0
-    }
 
+  str.split('').forEach(char => {
+    initZero(result, char)
     result[char]++
   })
 
   return result
 }
 
-function optimizedApplyInsertions(template, insertions, applications) {
+/**
+ * This optimized solution does not track the polymer string. It makes no
+ * attempt to maintain the order of the values in the polymer. Rather, it tracks
+ * the pairs, updating with each iteration of insertions.
+ *
+ * To do this, we create a hash of the polymer template's pairs. This will look
+ * something like: { NN: 1, NC: 1, CH: 1 } for the string 'NNCH'
+ *
+ * We also initialize a `charCounts` to track how many of each character there are.
+ * This is necessary since we'll never have the whole string to count, and we don't
+ * know the order of the pairs to stitch it back together. This will look like:
+ * { N: 2, C: 1, H: 1} for the string 'NNCH'
+ *
+ * `applyInsertion` is the crux of this function, it updates the `pairHash` and
+ * `charCounts`. If an insertion is found, we will create a set of `changes` and
+ * `inserts` necessary for the next step and apply them all at once after finding
+ * all `changes` and `inserts`.
+ *
+ * It is key to understand that when an `insert` occurs, it creates two pairs
+ * and removes the current pair. If I have an insertion rule of 'NC -> B' and
+ * apply it to the string 'NNCH', the resulting `pairHash` would now include the
+ * pairs 'NB' and 'BC', and would no longer have an 'NC'. { NN: 1, NB: 1, BC: 1, CH: 1}
+ */
+function optimizedApplyInsertions(template, insertions, iterations) {
   const pairHash = makePairHash(template)
   const charCounts = makeCharCounts(template)
   const insertionEntries = Object.entries(insertions)
@@ -109,67 +128,62 @@ function optimizedApplyInsertions(template, insertions, applications) {
     for (const [pair, insert] of insertionEntries) {
       if (!pairHash[pair]) continue
 
-      let count = pairHash[pair]
+      const count = pairHash[pair]
+
+      // add the count of the inserted values
+      initZero(inserts, insert)
+      inserts[insert] += count
+
+      // Get the keys of involved pairs
       const [first, last] = pair
       const leftKey = first + insert
       const rightKey = insert + last
 
-      if (!changes[leftKey]) changes[leftKey] = 0
-      if (!changes[rightKey]) changes[rightKey] = 0
-      if (!changes[pair]) changes[pair] = 0
+      // Adjust the pair counts accordingly, increase new ones, decrease old ones
+      initZero(changes, leftKey)
+      initZero(changes, rightKey)
+      initZero(changes, pair)
       changes[leftKey] += count
       changes[rightKey] += count
       changes[pair] -= count
-
-      if (!inserts[insert]) inserts[insert] = 0
-      inserts[insert] += count
     }
 
+    // Apply changes all at once
     Object.entries(changes).forEach(([pair, change]) => {
-      if (!pairHash[pair]) {
-        pairHash[pair] = 0
-      }
-
+      initZero(pairHash, pair)
       pairHash[pair] += change
     })
 
+    // Apply inserts all at once
     Object.entries(inserts).forEach(([key, value]) => {
-      if (!charCounts[key]) charCounts[key] = 0
+      initZero(charCounts, key)
       charCounts[key] += value
     })
 
+    // Remove unnecessary keys from the pairHash
     Object.entries(pairHash).forEach(([key, value]) => {
       if (!value) delete pairHash[key]
     })
   }
 
-  for (let i = 0; i < applications; i++) {
+  for (let i = 0; i < iterations; i++) {
     applyInsertion()
   }
 
   return charCounts
 }
 
-function partTwo(input, applications) {
+function partTwo(input, iterations) {
   const [polymerTemplate, pairInsertions] = parseInput(input)
   const counts = optimizedApplyInsertions(
     polymerTemplate,
     pairInsertions,
-    applications
+    iterations
   )
 
-  const [, max] = Object.entries(counts).reduce(
-    (acc, cur) => {
-      return cur[1] > acc[1] ? cur : acc
-    },
-    [, -Infinity]
-  )
-  const [, min] = Object.entries(counts).reduce(
-    (acc, cur) => {
-      return cur[1] < acc[1] ? cur : acc
-    },
-    [, Infinity]
-  )
+  const values = Object.values(counts)
+  const min = Math.min(...values)
+  const max = Math.max(...values)
 
   return max - min
 }
