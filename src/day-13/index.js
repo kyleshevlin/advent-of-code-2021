@@ -29,15 +29,8 @@ function makeEmptyGridOf(x, y) {
 }
 
 function makeGridFromDots(dots) {
-  const maxX = dots.reduce(
-    (acc, cur) => (cur[0] > acc ? cur[0] : acc),
-    -Infinity
-  )
-  const maxY = dots.reduce(
-    (acc, cur) => (cur[1] > acc ? cur[1] : acc),
-    -Infinity
-  )
-
+  const maxX = Math.max(...dots.map(([x]) => x))
+  const maxY = Math.max(...dots.map(([, y]) => y))
   const grid = makeEmptyGridOf(maxX, maxY)
 
   dots.forEach(([x, y]) => {
