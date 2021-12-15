@@ -58,12 +58,14 @@ function createGraph() {
   }
 }
 
-function parseInput(input) {
-  const matrix = input
+function createMatrix(input) {
+  return input
     .trim()
     .split('\n')
     .map(line => line.split('').map(Number))
+}
 
+function matrixToGraph(matrix) {
   const graph = createGraph()
 
   function getCell(rowIdx, colIdx) {
@@ -91,8 +93,7 @@ function parseInput(input) {
 
       neighbors.forEach(({ key, value }) => {
         graph.addNode(key, value)
-        // Shift the weight up by one to always get a positive value
-        graph.addEdge(nodeKey, key, Math.abs(nodeValue - value) + 1)
+        graph.addEdge(nodeKey, key, value)
       })
     }
   }
@@ -130,15 +131,30 @@ function astar(graph, start, end) {
   // Update for starting node
   distances[start.key] = 0
   via[start.key] = null
-  visited[start.key] = true
-
-  let currentNode = start
 
   // While we have unvisited nodes...
   while (Object.values(visited).some(x => !x)) {
+    // Get the remaining unvisitedNodes
+    const unvisitedNodes = Object.entries(visited)
+      .filter(([, value]) => !value)
+      .map(([key]) => graph.getNode(key))
+
+    // Select the closest unvisited node as the currentNode
+    const { closest: currentNode } = unvisitedNodes.reduce(
+      (acc, cur) => {
+        const distance = distances[cur.key]
+
+        if (distance < acc.distance) {
+          return { distance, closest: cur }
+        }
+
+        return acc
+      },
+      { distance: Infinity, closest: null }
+    )
+
     // If we find the end, return the pathNodeKeys
     if (currentNode.key === end.key) {
-      console.log(getPathNodeKeys(via, '6-8'))
       return getPathNodeKeys(via, currentNode.key)
     }
 
@@ -146,10 +162,6 @@ function astar(graph, start, end) {
     const neighborNodes = [...currentNode.children].filter(node => {
       return !visited[node.key]
     })
-
-    // if (currentNode.key === '2-3') {
-    //   console.log(currentNode.value, neighborNodes)
-    // }
 
     // Update the distance to the neighboring nodes
     for (const neighbor of neighborNodes) {
@@ -163,45 +175,29 @@ function astar(graph, start, end) {
       }
     }
 
-    const unvisitedNodes = Object.entries(visited)
-      .filter(([, value]) => !value)
-      .map(([key]) => graph.getNode(key))
-
-    const { closest } = unvisitedNodes.reduce(
-      (acc, cur) => {
-        const distance = distances[cur.key]
-
-        if (distance < acc.distance) {
-          return { distance, closest: cur }
-        }
-
-        return acc
-      },
-      { distance: Infinity, closest: null }
-    )
-
-    // Mark the closest as visited
-    visited[closest.key] = true
-
-    currentNode = closest
+    // Mark the node as visited
+    visited[currentNode.key] = true
   }
 
   return []
 }
 
 function partOne(input) {
-  const graph = parseInput(input)
+  const matrix = createMatrix(input)
+  const graph = matrixToGraph(matrix)
   const [, ...pathNodeKeys] = astar(
     graph,
     graph.getNode('0-0'),
-    graph.getNode('9-9')
+    graph.getNode(`${matrix.length - 1}-${matrix[0].length - 1}`)
   )
-  console.log(pathNodeKeys)
   const values = pathNodeKeys.map(key => graph.getNode(key).value)
   const result = values.reduce((a, c) => a + c)
 
   return result
 }
+
+// const firstAnswer = partOne(data)
+// console.log(firstAnswer)
 
 function partTwo(input) {}
 
