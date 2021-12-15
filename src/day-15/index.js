@@ -203,7 +203,9 @@ function astar(graph, start, end) {
       const nextPotentialDistance = distances[currentNode.key] + weight
 
       // FIXME: Changing the operator from `<` to `<=` gets different results
-      // when it shouldn't. If they are the same, it should be a coin flip
+      // when it shouldn't. If they are the same, it should be a coin flip and
+      // it shouldn't change the result. Also, neither of these solves AoC, while
+      // both pass the test for part 1, yay.
       if (nextPotentialDistance <= currentDistance) {
         distances[neighbor.key] = nextPotentialDistance
         via[neighbor.key] = currentNode.key
