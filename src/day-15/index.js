@@ -5,6 +5,35 @@ const data = fs.readFileSync(path.resolve(__dirname, './input.txt'), {
   encoding: 'utf-8',
 })
 
+function createPriorityQueue() {
+  const queue = []
+
+  const createQueueElement = (value, priority) => ({ value, priority })
+
+  return {
+    enqueue(value, priority) {
+      const element = createQueueElement(value, priority)
+      let added = false
+
+      for (const [idx, item] of queue.entries()) {
+        if (element.priority > item.priority) {
+          queue.splice(idx, 0, element)
+          added = true
+          break
+        }
+      }
+
+      if (!added) queue.push(element)
+    },
+    dequeue() {
+      return queue.unshift()
+    },
+    isEmpty() {
+      return queue.length === 0
+    },
+  }
+}
+
 function createGraph() {
   const nodes = new Set()
   const edges = new Set()
@@ -113,6 +142,7 @@ function getPathNodeKeys(obj, key) {
   return nodeKeys
 }
 
+// TODO: needs optimization to complete computation
 function astar(graph, start, end) {
   // hold the distances from the start node to every other node
   const distances = {}
