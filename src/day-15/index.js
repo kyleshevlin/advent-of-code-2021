@@ -8,15 +8,15 @@ const data = fs.readFileSync(path.resolve(__dirname, './input.txt'), {
 function createPriorityQueue() {
   const queue = []
 
-  const createQueueElement = (value, priority) => ({ value, priority })
+  const createQueueElement = (key, priority) => ({ key, priority })
 
-  return {
-    enqueue(value, priority) {
-      const element = createQueueElement(value, priority)
+  const result = {
+    enqueue(key, priority) {
+      const element = createQueueElement(key, priority)
       let added = false
 
       for (const [idx, item] of queue.entries()) {
-        if (element.priority > item.priority) {
+        if (element.priority < item.priority) {
           queue.splice(idx, 0, element)
           added = true
           break
@@ -26,12 +26,24 @@ function createPriorityQueue() {
       if (!added) queue.push(element)
     },
     dequeue() {
-      return queue.unshift()
+      const item = queue.shift()
+      return item?.key
+    },
+    requeue(key, priority) {
+      const index = queue.findIndex(item => item.key === key)
+      if (index < 0) console.log('wooooahhhh')
+      queue.splice(index, 1)
+      result.enqueue(key, priority)
     },
     isEmpty() {
       return queue.length === 0
     },
+    print() {
+      console.log(queue)
+    },
   }
+
+  return result
 }
 
 function createGraph() {
@@ -142,73 +154,65 @@ function getPathNodeKeys(obj, key) {
   return nodeKeys
 }
 
-// TODO: needs optimization to complete computation
+// TODO: Better, passes test, but doesn't get solve the puzzle
 function astar(graph, start, end) {
   // hold the distances from the start node to every other node
   const distances = {}
-  // Use this to track the adjacent node that a node was reached
+  // Use this to track the adjacent node by which a node was reached
   const via = {}
   // Used to track which nodes we have visited
   const visited = {}
+  // Create a queue of nodes to visit
+  const nodesToVisitQueue = createPriorityQueue()
 
   // Initialize nodes
   for (const node of graph.nodes) {
     distances[node.key] = Infinity
     via[node.key] = start.key
     visited[node.key] = false
+    nodesToVisitQueue.enqueue(node.key, Infinity)
   }
 
   // Update for starting node
   distances[start.key] = 0
   via[start.key] = null
+  nodesToVisitQueue.requeue(start.key, 0)
 
   // While we have unvisited nodes...
-  while (Object.values(visited).some(x => !x)) {
-    // Get the remaining unvisitedNodes
-    const unvisitedNodes = Object.entries(visited)
-      .filter(([, value]) => !value)
-      .map(([key]) => graph.getNode(key))
-
-    // Select the closest unvisited node as the currentNode
-    const { closest: currentNode } = unvisitedNodes.reduce(
-      (acc, cur) => {
-        const distance = distances[cur.key]
-
-        if (distance < acc.distance) {
-          return { distance, closest: cur }
-        }
-
-        return acc
-      },
-      { distance: Infinity, closest: null }
-    )
+  while (!nodesToVisitQueue.isEmpty()) {
+    const currentNodeKey = nodesToVisitQueue.dequeue()
+    const currentNode = graph.getNode(currentNodeKey)
 
     // If we find the end, return the pathNodeKeys
     if (currentNode.key === end.key) {
       return getPathNodeKeys(via, currentNode.key)
     }
 
+    // Mark the node as visited
+    visited[currentNode.key] = true
+
     // Get the neighboring nodes
-    const neighborNodes = [...currentNode.children].filter(node => {
-      return !visited[node.key]
-    })
+    const neighborNodes = currentNode.children
 
     // Update the distance to the neighboring nodes
     for (const neighbor of neighborNodes) {
-      const edge = graph.getEdge(currentNode.key, neighbor.key)
-      const currentDistanceToNeighbor = distances[neighbor.key]
-      const nextPotentialDistance = distances[currentNode.key] + edge.weight
+      if (visited[neighbor.key]) continue
 
-      if (nextPotentialDistance < currentDistanceToNeighbor) {
+      const { weight } = graph.getEdge(currentNode.key, neighbor.key)
+      const currentDistance = distances[neighbor.key]
+      const nextPotentialDistance = distances[currentNode.key] + weight
+
+      // FIXME: Changing the operator from `<` to `<=` gets different results
+      // when it shouldn't. If they are the same, it should be a coin flip
+      if (nextPotentialDistance <= currentDistance) {
         distances[neighbor.key] = nextPotentialDistance
         via[neighbor.key] = currentNode.key
+        nodesToVisitQueue.requeue(neighbor.key, nextPotentialDistance)
       }
     }
-
-    // Mark the node as visited
-    visited[currentNode.key] = true
   }
 
+  // We done fucked up
   return []
 }
 
@@ -226,8 +230,8 @@ function partOne(input) {
   return result
 }
 
-// const firstAnswer = partOne(data)
-// console.log(firstAnswer)
+const firstAnswer = partOne(data)
+console.log(firstAnswer)
 
 function partTwo(input) {}
 
