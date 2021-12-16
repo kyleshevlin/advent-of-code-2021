@@ -31,7 +31,6 @@ function createPriorityQueue() {
     },
     requeue(key, priority) {
       const index = queue.findIndex(item => item.key === key)
-      if (index < 0) console.log('wooooahhhh')
       queue.splice(index, 1)
       result.enqueue(key, priority)
     },
@@ -132,9 +131,9 @@ function matrixToGraph(matrix) {
         { key: `${rowIdx}-${colIdx - 1}`, value: getCell(rowIdx, colIdx - 1) },
       ].filter(({ value }) => Boolean(value))
 
-      neighbors.forEach(({ key, value }) => {
-        graph.addNode(key, value)
-        graph.addEdge(nodeKey, key, value)
+      neighbors.forEach(neighbor => {
+        graph.addNode(neighbor.key, neighbor.value)
+        graph.addEdge(nodeKey, neighbor.key, neighbor.value)
       })
     }
   }
@@ -142,25 +141,11 @@ function matrixToGraph(matrix) {
   return graph
 }
 
-function getPathNodeKeys(obj, key) {
-  const nodeKeys = []
-  let currentKey = key
-
-  while (currentKey) {
-    nodeKeys.unshift(currentKey)
-    currentKey = obj[currentKey]
-  }
-
-  return nodeKeys
-}
-
 // TODO: Better, passes test, but doesn't get solve the puzzle
 function astar(graph, start, end) {
   // hold the distances from the start node to every other node
   const distances = {}
   // Use this to track the adjacent node by which a node was reached
-  const via = {}
-  // Used to track which nodes we have visited
   const visited = {}
   // Create a queue of nodes to visit
   const nodesToVisitQueue = createPriorityQueue()
@@ -168,14 +153,12 @@ function astar(graph, start, end) {
   // Initialize nodes
   for (const node of graph.nodes) {
     distances[node.key] = Infinity
-    via[node.key] = start.key
     visited[node.key] = false
     nodesToVisitQueue.enqueue(node.key, Infinity)
   }
 
   // Update for starting node
   distances[start.key] = 0
-  via[start.key] = null
   nodesToVisitQueue.requeue(start.key, 0)
 
   // While we have unvisited nodes...
@@ -185,7 +168,7 @@ function astar(graph, start, end) {
 
     // If we find the end, return the pathNodeKeys
     if (currentNode.key === end.key) {
-      return getPathNodeKeys(via, currentNode.key)
+      return distances[currentNode.key]
     }
 
     // Mark the node as visited
@@ -198,42 +181,43 @@ function astar(graph, start, end) {
     for (const neighbor of neighborNodes) {
       if (visited[neighbor.key]) continue
 
-      const { weight } = graph.getEdge(currentNode.key, neighbor.key)
-      const currentDistance = distances[neighbor.key]
-      const nextPotentialDistance = distances[currentNode.key] + weight
+      // Edge from current to neighbor, edge has weight
+      const edge = graph.getEdge(currentNode.key, neighbor.key)
 
-      // FIXME: Changing the operator from `<` to `<=` gets different results
-      // when it shouldn't. If they are the same, it should be a coin flip and
-      // it shouldn't change the result. Also, neither of these solves AoC, while
-      // both pass the test for part 1, yay.
-      if (nextPotentialDistance <= currentDistance) {
+      // Get the currently stored distance
+      const storedDistance = distances[neighbor.key]
+
+      // Calculate the next potential distance
+      // FIXME: My guess is the bug is here
+      const nextPotentialDistance = distances[currentNode.key] + edge.weight
+
+      if (nextPotentialDistance < storedDistance) {
+        // replace the stored distance
         distances[neighbor.key] = nextPotentialDistance
-        via[neighbor.key] = currentNode.key
+        // reprioritize the neighbor in the priority queue
         nodesToVisitQueue.requeue(neighbor.key, nextPotentialDistance)
       }
     }
   }
 
   // We done fucked up
-  return []
+  return 0
 }
 
 function partOne(input) {
   const matrix = createMatrix(input)
   const graph = matrixToGraph(matrix)
-  const [, ...pathNodeKeys] = astar(
+  const result = astar(
     graph,
     graph.getNode('0-0'),
     graph.getNode(`${matrix.length - 1}-${matrix[0].length - 1}`)
   )
-  const values = pathNodeKeys.map(key => graph.getNode(key).value)
-  const result = values.reduce((a, c) => a + c)
 
   return result
 }
 
 const firstAnswer = partOne(data)
-console.log(firstAnswer)
+console.log(firstAnswer) // 519, wrong
 
 function partTwo(input) {}
 
