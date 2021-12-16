@@ -17,6 +17,6 @@ test('partOne', () => {
   expect(partOne(data)).toEqual(40)
 })
 
-xtest('partTwo', () => {
-  expect(partTwo(data)).toEqual()
+test('partTwo', () => {
+  expect(partTwo(data)).toEqual(315)
 })

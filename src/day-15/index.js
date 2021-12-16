@@ -29,11 +29,6 @@ function createPriorityQueue() {
       const item = queue.shift()
       return item?.key
     },
-    requeue(key, priority) {
-      const index = queue.findIndex(item => item.key === key)
-      queue.splice(index, 1)
-      result.enqueue(key, priority)
-    },
     isEmpty() {
       return queue.length === 0
     },
@@ -48,11 +43,8 @@ function createPriorityQueue() {
 function createGraph() {
   const nodes = new Set()
   const edges = new Set()
-  const nodeCache = new Map()
 
   function createNode(key, value) {
-    if (nodeCache.has(key)) return nodeCache.get(key)
-
     const children = new Set()
 
     const node = {
@@ -63,8 +55,6 @@ function createGraph() {
       },
       value,
     }
-
-    nodeCache.set(key, node)
 
     return node
   }
@@ -137,7 +127,6 @@ function matrixToGraph(matrix) {
   return graph
 }
 
-// TODO: Better, passes test, but doesn't get solve the puzzle
 function astar(graph, start, end) {
   // hold the distances from the start node to every other node
   const distances = {}
@@ -150,12 +139,11 @@ function astar(graph, start, end) {
   for (const node of graph.nodes) {
     distances[node.key] = Infinity
     visited[node.key] = false
-    nodesToVisitQueue.enqueue(node.key, Infinity)
   }
 
   // Update for starting node
   distances[start.key] = 0
-  nodesToVisitQueue.requeue(start.key, 0)
+  nodesToVisitQueue.enqueue(start.key, 0)
 
   // While we have unvisited nodes...
   while (!nodesToVisitQueue.isEmpty()) {
@@ -181,14 +169,13 @@ function astar(graph, start, end) {
       const storedDistance = distances[neighbor.key]
 
       // Calculate the next potential distance
-      // FIXME: My guess is the bug is here
       const nextPotentialDistance = distances[currentNode.key] + neighbor.value
 
       if (nextPotentialDistance < storedDistance) {
         // replace the stored distance
         distances[neighbor.key] = nextPotentialDistance
         // reprioritize the neighbor in the priority queue
-        nodesToVisitQueue.requeue(neighbor.key, nextPotentialDistance)
+        nodesToVisitQueue.enqueue(neighbor.key, nextPotentialDistance)
       }
     }
   }
@@ -209,11 +196,68 @@ function partOne(input) {
   return result
 }
 
-const firstAnswer = partOne(data) // 527
+// const firstAnswer = partOne(data) // 527
 
-function partTwo(input) {}
+const nextValue = increment => num => {
+  let result = num
+
+  for (let i = 0; i < increment; i++) {
+    if (result === 9) {
+      result = 1
+      continue
+    }
+
+    result++
+  }
+
+  return result
+}
+
+const incrementRowBy = (num, row) => {
+  if (num === 0) return row
+  return row.map(nextValue(num))
+}
+
+const createBigRow = startNumber => matrix =>
+  matrix.map(row => {
+    return [
+      ...incrementRowBy(startNumber + 0, row),
+      ...incrementRowBy(startNumber + 1, row),
+      ...incrementRowBy(startNumber + 2, row),
+      ...incrementRowBy(startNumber + 3, row),
+      ...incrementRowBy(startNumber + 4, row),
+    ]
+  })
+
+function fiveByFiveMatrix(initialMatrix) {
+  const result = []
+
+  for (let i = 0; i < 5; i++) {
+    const bigRow = createBigRow(i)(initialMatrix)
+    result.push(...bigRow)
+  }
+
+  return result
+}
+
+function partTwo(input) {
+  const initialMatrix = createMatrix(input)
+  const fiveByFive = fiveByFiveMatrix(initialMatrix)
+  const graph = matrixToGraph(fiveByFive)
+  const result = astar(
+    graph,
+    graph.getNode('0-0'),
+    graph.getNode(`${fiveByFive.length - 1}-${fiveByFive[0].length - 1}`)
+  )
+
+  return result
+}
+
+// const secondAnswer = partTwo(data)
+// console.log(secondAnswer)
 
 module.exports = {
   partOne,
   partTwo,
+  nextValue,
 }
