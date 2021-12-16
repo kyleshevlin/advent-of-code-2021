@@ -80,7 +80,7 @@ function createGraph() {
     getNode(key) {
       return [...nodes].find(node => node.key === key)
     },
-    addEdge(key1, key2, weight) {
+    addEdge(key1, key2) {
       const node1 = this.getNode(key1)
       const node2 = this.getNode(key2)
 
@@ -89,11 +89,7 @@ function createGraph() {
 
       const key = [key1, key2].sort().join('-')
 
-      edges.add({ key, weight })
-    },
-    getEdge(key1, key2) {
-      const key = [key1, key2].sort().join('-')
-      return [...edges].find(edge => edge.key === key)
+      edges.add(key)
     },
   }
 }
@@ -133,7 +129,7 @@ function matrixToGraph(matrix) {
 
       neighbors.forEach(neighbor => {
         graph.addNode(neighbor.key, neighbor.value)
-        graph.addEdge(nodeKey, neighbor.key, neighbor.value)
+        graph.addEdge(nodeKey, neighbor.key)
       })
     }
   }
@@ -181,15 +177,12 @@ function astar(graph, start, end) {
     for (const neighbor of neighborNodes) {
       if (visited[neighbor.key]) continue
 
-      // Edge from current to neighbor, edge has weight
-      const edge = graph.getEdge(currentNode.key, neighbor.key)
-
       // Get the currently stored distance
       const storedDistance = distances[neighbor.key]
 
       // Calculate the next potential distance
       // FIXME: My guess is the bug is here
-      const nextPotentialDistance = distances[currentNode.key] + edge.weight
+      const nextPotentialDistance = distances[currentNode.key] + neighbor.value
 
       if (nextPotentialDistance < storedDistance) {
         // replace the stored distance
@@ -216,8 +209,7 @@ function partOne(input) {
   return result
 }
 
-const firstAnswer = partOne(data)
-console.log(firstAnswer) // 519, wrong
+const firstAnswer = partOne(data) // 527
 
 function partTwo(input) {}
 
