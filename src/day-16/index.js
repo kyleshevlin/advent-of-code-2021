@@ -30,12 +30,12 @@ const convertHexToBinary = input =>
 const toDecimal = str => parseInt(str, 2)
 
 function parsePacket(context, numberOfPackets = Infinity) {
-  const versions = []
+  // const versions = []
   const result = []
 
   while (context.str.length > 6 && numberOfPackets !== 0) {
     const version = toDecimal(context.str.slice(0, 3))
-    versions.push(version)
+    // versions.push(version)
     const type = toDecimal(context.str.slice(3, 6))
     context.str = context.str.slice(6)
 
@@ -51,15 +51,16 @@ function parsePacket(context, numberOfPackets = Infinity) {
 
       result.push(toDecimal(binaryValue))
     } else {
+      const children = []
       const typeId = context.str[0]
       context.str = context.str.slice(1)
 
       if (typeId === '0') {
         const length = toDecimal(context.str.slice(0, 15))
         const subPackets = context.str.slice(15, 15 + length)
-        const subVersions = parsePacket({ str: subPackets })
-        versions.push(...subVersions)
-        // result.push(...parsePacket({ str: subPackets }))
+        // const subVersions = parsePacket({ str: subPackets })
+        // versions.push(...subVersions)
+        children.push(...parsePacket({ str: subPackets }))
         context.str = context.str.slice(15 + length)
       }
 
@@ -68,16 +69,47 @@ function parsePacket(context, numberOfPackets = Infinity) {
         context.str = context.str.slice(11)
         // TODO: I absolutely _hate_ that this depends on a reference so that
         // it mutates _this_ context in the recursive substack of calls. Ugh.
-        const subVersions = parsePacket(context, numberOfPackets)
-        versions.push(...subVersions)
-        // result.push(...parsePacket(context, numberOfPackets))
+        // const subVersions = parsePacket(context, numberOfPackets)
+        // versions.push(...subVersions)
+        children.push(...parsePacket(context, numberOfPackets))
+      }
+
+      switch (type) {
+        case 0:
+          result.push(children.reduce((a, c) => a + c, 0))
+          break
+        case 1:
+          result.push(children.reduce((a, c) => a * c, 1))
+          break
+        case 2:
+          result.push(Math.min(...children))
+          break
+        case 3:
+          result.push(Math.max(...children))
+          break
+        case 5: {
+          const value = children[0] > children[1] ? 1 : 0
+          result.push(value)
+          break
+        }
+        case 6: {
+          const value = children[0] < children[1] ? 1 : 0
+          result.push(value)
+          break
+        }
+        case 7: {
+          const value = children[0] === children[1] ? 1 : 0
+          result.push(value)
+          break
+        }
+        default:
       }
     }
 
     numberOfPackets--
   }
 
-  return versions
+  return result
 }
 
 function partOne(input) {
@@ -88,10 +120,17 @@ function partOne(input) {
 }
 
 // The actual answer is in the console.log for this one
-const firstAnswer = partOne(data)
-console.log(firstAnswer)
+// const firstAnswer = partOne(data) // 977
+// console.log(firstAnswer)
 
-function partTwo(input) {}
+function partTwo(input) {
+  const binary = convertHexToBinary(input)
+  const [result] = parsePacket({ str: binary })
+  return result
+}
+
+const secondAnswer = partTwo(data) // 101501020883
+console.log(secondAnswer)
 
 module.exports = {
   partOne,
