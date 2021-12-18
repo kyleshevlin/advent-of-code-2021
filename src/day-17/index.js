@@ -94,7 +94,26 @@ function partOne(input) {
 
 const firstAnswer = partOne(data) // 4753
 
-function partTwo(input) {}
+function partTwo(input) {
+  const target = parseTarget(input)
+  const minVx = getMinVx(target[0][0])
+  const maxVx = target[0][1]
+  const minVy = target[1][0]
+
+  const solutions = []
+  for (let i = minVx; i <= maxVx; i++) {
+    for (let j = minVy; j <= 1000; j++) {
+      const result = launchProbe(i, j, target)
+      if (result.status === 'success') {
+        solutions.push({ maxY: result.maxY, vx: i, vy: j })
+      }
+    }
+  }
+
+  return solutions.length
+}
+
+const secondAnswer = partTwo(data) // 1546
 
 module.exports = {
   partOne,
