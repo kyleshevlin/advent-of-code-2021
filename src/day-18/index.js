@@ -232,7 +232,31 @@ function partOne(input) {
 
 const firstAnswer = partOne(data) // 4207
 
-function partTwo(input) {}
+function copyTree(tree) {
+  const pairString = treeToPairString(tree)
+  return pairToTree(JSON.parse(pairString), null, 0)
+}
+
+function partTwo(input) {
+  const trees = parseInputIntoTrees(input)
+  const magnitudes = []
+
+  for (const first of trees) {
+    for (const second of trees) {
+      if (first === second) continue
+
+      const firstCopy = copyTree(first)
+      const secondCopy = copyTree(second)
+
+      const result = getMagnitude(addition(firstCopy, secondCopy))
+      magnitudes.push(result)
+    }
+  }
+
+  return Math.max(...magnitudes)
+}
+
+const secondAnswer = partTwo(data) // 4635
 
 module.exports = {
   addition,

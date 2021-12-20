@@ -32,8 +32,8 @@ test('partOne', () => {
   expect(partOne(data)).toEqual(4140)
 })
 
-xtest('partTwo', () => {
-  expect(partTwo(data)).toEqual()
+test('partTwo', () => {
+  expect(partTwo(data)).toEqual(3993)
 })
 
 test('findLeft', () => {
