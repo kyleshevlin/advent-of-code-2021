@@ -11,7 +11,7 @@ test('partOne', () => {
   expect(partOne(data)).toEqual(79)
 })
 
-xtest('partTwo', () => {
+test('partTwo', () => {
   expect(partTwo(data)).toEqual(3621)
 })
 
