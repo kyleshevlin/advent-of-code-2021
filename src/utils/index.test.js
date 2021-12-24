@@ -1,4 +1,23 @@
-const { getAllUniquePairs, intersection, union, zip } = require('./')
+const {
+  createQueue,
+  getAllUniquePairs,
+  intersection,
+  union,
+  zip,
+} = require('./')
+
+test('createQueue', () => {
+  const queue = createQueue()
+  queue.enqueue(1)
+  queue.enqueue(2)
+  queue.enqueue(3)
+
+  expect(queue.isEmpty()).toEqual(false)
+  expect(queue.dequeue()).toEqual(1)
+  expect(queue.dequeue()).toEqual(2)
+  expect(queue.dequeue()).toEqual(3)
+  expect(queue.isEmpty()).toEqual(true)
+})
 
 test('intersection', () => {
   const set1 = new Set([1, 2, 3])
@@ -21,7 +40,7 @@ test('zip', () => {
   const arr2 = [1, 2, 3]
   const arr3 = [true, false, null]
 
-  expect(zip([arr1, arr2, arr3])).toEqual([
+  expect(zip(arr1, arr2, arr3)).toEqual([
     ['a', 1, true],
     ['b', 2, false],
     ['c', 3, null],

@@ -20,12 +20,12 @@ function union(set1, set2) {
   return result
 }
 
-function zip(arrays) {
+function zip(...arrays) {
   const lengths = arrays.map(array => array.length)
-  const maxLength = Math.max(...lengths)
+  const minLength = Math.min(...lengths)
   const result = []
 
-  for (let idx = 0; idx < maxLength; idx++) {
+  for (let idx = 0; idx < minLength; idx++) {
     const group = []
 
     for (const arr of arrays) {
@@ -39,23 +39,44 @@ function zip(arrays) {
 }
 
 function getAllUniquePairs(items) {
+  const itemsArray = Array.from(items)
   const pairs = []
 
   let i
   let j
 
-  for (i = 0; i < items.length; i++) {
-    for (j = i + 1; j < items.length; j++) {
-      pairs.push([items[i], items[j]])
+  for (i = 0; i < itemsArray.length; i++) {
+    for (j = i + 1; j < itemsArray.length; j++) {
+      pairs.push([itemsArray[i], itemsArray[j]])
     }
   }
 
   return pairs
 }
 
+function createQueue() {
+  const queue = []
+
+  return {
+    dequeue() {
+      return queue.shift()
+    },
+    enqueue(item) {
+      queue.push(item)
+    },
+    isEmpty() {
+      return queue.length === 0
+    },
+  }
+}
+
+const noNegZero = n => (n === -0 ? 0 : n)
+
 module.exports = {
+  createQueue,
   getAllUniquePairs,
   intersection,
+  noNegZero,
   union,
   zip,
 }
