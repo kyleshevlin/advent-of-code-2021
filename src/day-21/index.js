@@ -92,7 +92,6 @@ function runGame(game) {
 
 function partOne(input) {
   const [player1Start, player2Start] = parseInput(input)
-  const scores = [0, 0]
   const die = createDeterministicDie()
   const game = createGame(player1Start, player2Start, die)
 
@@ -107,7 +106,72 @@ function partOne(input) {
 
 const firstAnswer = partOne(data) // 518418
 
-function partTwo(input) {}
+const roll = [1, 2, 3]
+const frequencies = {}
+for (const r1 of roll) {
+  for (const r2 of roll) {
+    for (const r3 of roll) {
+      const key = r1 + r2 + r3
+      if (!frequencies[key]) frequencies[key] = 0
+      frequencies[key]++
+    }
+  }
+}
+
+function partTwo(input) {
+  const [player1Start, player2Start] = parseInput(input)
+
+  // We're going to memoize the outcomes for rolls and positions
+  const memo = {}
+
+  function runGame(p1Score, p2Score, p1Position, p2Position, turn) {
+    const key = [p1Score, p2Score, p1Position, p2Position, turn].join()
+    if (memo[key]) return memo[key]
+
+    // Base cases for the recursion
+    if (p1Score >= 21) {
+      const result = [1, 0]
+      memo[key] = result
+      return result
+    }
+
+    if (p2Score >= 21) {
+      const result = [0, 1]
+      memo[key] = result
+      return result
+    }
+
+    let totalWins = [0, 0]
+
+    for (const [rollTotal, frequency] of Object.entries(frequencies)) {
+      let win
+
+      if (turn === 'p1') {
+        const nextPos = moveOnBoard(p1Position, rollTotal)
+        win = runGame(p1Score + nextPos, p2Score, nextPos, p2Position, 'p2')
+      } else {
+        const nextPos = moveOnBoard(p2Position, rollTotal)
+        win = runGame(p1Score, p2Score + nextPos, p1Position, nextPos, 'p1')
+      }
+
+      const [p1TotalWins, p2TotalWins] = totalWins
+      const [p1Wins, p2Wins] = win
+
+      totalWins = [
+        p1TotalWins + frequency * p1Wins,
+        p2TotalWins + frequency * p2Wins,
+      ]
+    }
+
+    memo[key] = totalWins
+    return totalWins
+  }
+
+  const [p1Wins, p2Wins] = runGame(0, 0, player1Start, player2Start, 'p1')
+  return Math.max(p1Wins, p2Wins)
+}
+
+const secondAnswer = partTwo(data) // 116741133558209
 
 module.exports = {
   partOne,

@@ -10,5 +10,5 @@ test('partOne', () => {
 })
 
 test('partTwo', () => {
-  expect(partTwo(data)).toEqual()
+  expect(partTwo(data)).toEqual(444356092776315)
 })
