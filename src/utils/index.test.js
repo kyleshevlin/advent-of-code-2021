@@ -1,6 +1,7 @@
 const {
   createQueue,
   getAllUniquePairs,
+  getRangeIndices,
   intersection,
   union,
   zip,
@@ -58,4 +59,10 @@ test('getAllUniquePairs', () => {
     [2, 4],
     [3, 4],
   ])
+})
+
+test('getRangeIndices', () => {
+  expect(getRangeIndices([1, 1])).toEqual([1])
+  expect(getRangeIndices([0, 5])).toEqual([0, 1, 2, 3, 4, 5])
+  expect(getRangeIndices([-2, 2])).toEqual([-2, -1, 0, 1, 2])
 })

@@ -72,9 +72,20 @@ function createQueue() {
 
 const noNegZero = n => (n === -0 ? 0 : n)
 
+const getRangeIndices = ([start, end]) => {
+  if (end < start) throw new Error('end needs ot be greater than start')
+
+  // + 1 includes the end of the range
+  const diff = Math.abs(end + 1 - start)
+  return Array(diff)
+    .fill()
+    .map((_, idx) => start + idx)
+}
+
 module.exports = {
   createQueue,
   getAllUniquePairs,
+  getRangeIndices,
   intersection,
   noNegZero,
   union,
