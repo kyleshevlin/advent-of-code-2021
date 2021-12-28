@@ -82,8 +82,44 @@ const getRangeIndices = ([start, end]) => {
     .map((_, idx) => start + idx)
 }
 
+function createPriorityQueue() {
+  const queue = []
+
+  const createQueueElement = (key, priority) => ({ key, priority })
+
+  const result = {
+    enqueue(key, priority) {
+      const element = createQueueElement(key, priority)
+      let added = false
+
+      for (const [idx, item] of queue.entries()) {
+        if (element.priority < item.priority) {
+          queue.splice(idx, 0, element)
+          added = true
+          break
+        }
+      }
+
+      if (!added) queue.push(element)
+    },
+    dequeue() {
+      const item = queue.shift()
+      return item?.key
+    },
+    isEmpty() {
+      return queue.length === 0
+    },
+    print() {
+      console.log(queue)
+    },
+  }
+
+  return result
+}
+
 module.exports = {
   createQueue,
+  createPriorityQueue,
   getAllUniquePairs,
   getRangeIndices,
   intersection,
