@@ -3,6 +3,7 @@ const {
   getAllUniquePairs,
   getRangeIndices,
   intersection,
+  pad,
   union,
   zip,
 } = require('./')
@@ -65,4 +66,10 @@ test('getRangeIndices', () => {
   expect(getRangeIndices([1, 1])).toEqual([1])
   expect(getRangeIndices([0, 5])).toEqual([0, 1, 2, 3, 4, 5])
   expect(getRangeIndices([-2, 2])).toEqual([-2, -1, 0, 1, 2])
+})
+
+test('pad', () => {
+  expect(pad('foobarbaz', 5, 'a')).toEqual('foobarbaz')
+  expect(pad('foo', 10, 'a')).toEqual('aaaafooaaa')
+  expect(pad('foo', 10, 'a', 'back')).toEqual('aaafooaaaa')
 })

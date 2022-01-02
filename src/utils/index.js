@@ -117,13 +117,45 @@ function createPriorityQueue() {
   return result
 }
 
+const sum = (x, y) => x + y
+
+const product = (x, y) => x * y
+
+const PAD_BIAS = {
+  front: ['unshift', 'push'],
+  back: ['push', 'unshift'],
+}
+
+function pad(str, length, char, bias = 'front') {
+  if (char.length > 1) {
+    throw new Error('`char` argument can only have a length of 1')
+  }
+
+  if (str.length >= length) return str
+
+  const chars = [...str]
+  const biasMethods = PAD_BIAS[bias] ?? PAD_BIAS.front
+
+  let idx = 0
+  while (chars.length < length) {
+    const method = biasMethods[idx % 2]
+    chars[method](char)
+    idx++
+  }
+
+  return chars.join('')
+}
+
 module.exports = {
-  createQueue,
   createPriorityQueue,
+  createQueue,
   getAllUniquePairs,
   getRangeIndices,
   intersection,
   noNegZero,
+  pad,
+  product,
+  sum,
   union,
   zip,
 }
