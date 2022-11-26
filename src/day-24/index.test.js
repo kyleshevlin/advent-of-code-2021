@@ -2,10 +2,10 @@ const { partOne, partTwo } = require('./')
 
 const data = ``
 
-test('partOne', () => {
+xtest('partOne', () => {
   expect(partOne(data)).toEqual()
 })
 
-test('partTwo', () => {
+xtest('partTwo', () => {
   expect(partTwo(data)).toEqual()
 })
